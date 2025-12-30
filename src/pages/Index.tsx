@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, ShoppingCart, Receipt, AlertTriangle, Package } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useSales } from "@/hooks/useSales";
+import { formatCLP } from "@/lib/formatCurrency";
 
 const Dashboard = () => {
   const { products, getLowStockProducts } = useProducts();
@@ -17,7 +18,7 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Ventas Hoy",
-      value: `$${todayTotal.toFixed(2)}`,
+      value: formatCLP(todayTotal),
       icon: TrendingUp,
       color: "text-primary",
       bgColor: "bg-secondary",
@@ -31,7 +32,7 @@ const Dashboard = () => {
     },
     {
       title: "Ticket Promedio",
-      value: `$${averageTicket.toFixed(2)}`,
+      value: formatCLP(averageTicket),
       icon: Receipt,
       color: "text-primary",
       bgColor: "bg-secondary",
@@ -141,7 +142,7 @@ const Dashboard = () => {
                         </p>
                       </div>
                       <span className="text-primary font-bold text-lg">
-                        ${sale.total.toFixed(2)}
+                        {formatCLP(sale.total)}
                       </span>
                     </div>
                   ))}
