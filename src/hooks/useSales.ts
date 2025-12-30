@@ -26,7 +26,7 @@ export function useSales() {
     return () => unsubscribe();
   }, []);
 
-  const addSale = async (items: CartItem[], total: number, paymentMethod: string) => {
+  const addSale = async (items: CartItem[], total: number, paymentMethod: string): Promise<string> => {
     const salesRef = ref(database, "sales");
     const newSaleRef = push(salesRef);
     const sale: Omit<Sale, "id"> = {
@@ -36,7 +36,7 @@ export function useSales() {
       paymentMethod,
     };
     await set(newSaleRef, sale);
-    return newSaleRef.key;
+    return newSaleRef.key || "";
   };
 
   const getTodaySales = () => {

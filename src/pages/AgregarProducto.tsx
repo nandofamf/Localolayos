@@ -4,10 +4,11 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, Plus, Save } from "lucide-react";
+import { Package, Plus, Save, Barcode } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { CATEGORIES } from "@/types";
 import { toast } from "sonner";
+import { BarcodeGenerator } from "@/components/BarcodeGenerator";
 
 const AgregarProducto = () => {
   const navigate = useNavigate();
@@ -136,7 +137,8 @@ const AgregarProducto = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Barcode className="w-4 h-4" />
                   Código de barras (opcional)
                 </label>
                 <Input
@@ -174,6 +176,14 @@ const AgregarProducto = () => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Barcode Generator */}
+        <div className="mt-6">
+          <BarcodeGenerator
+            initialValue={form.barcode}
+            onBarcodeGenerated={(barcode) => handleChange("barcode", barcode)}
+          />
+        </div>
 
         {/* Quick Add Multiple */}
         <Card className="shadow-card mt-6">

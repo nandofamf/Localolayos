@@ -3,12 +3,13 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Package, Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
+import { Search, Package, Plus, Minus, Trash2, ShoppingCart, Printer } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useSales } from "@/hooks/useSales";
 import { useCart } from "@/hooks/useCart";
 import { CATEGORIES } from "@/types";
 import { toast } from "sonner";
+import { printReceipt } from "@/components/ReceiptPrinter";
 
 const POS = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +37,7 @@ const POS = () => {
     addToCart(product);
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (shouldPrint: boolean = false) => {
     if (items.length === 0) {
       toast.error("El carrito está vacío");
       return;
@@ -52,7 +53,19 @@ const POS = () => {
       }
 
       // Register sale
-      await addSale(items, getTotal(), "efectivo");
+      const saleId = await addSale(items, getTotal(), "efectivo");
+      
+      // Print receipt if requested
+      if (shouldPrint) {
+        printReceipt({
+          items,
+          total: getTotal(),
+          paymentMethod: "efectivo",
+          date: new Date(),
+          saleId,
+        });
+      }
+
       clearCart();
       toast.success("¡Venta completada!");
     } catch (error) {
@@ -205,12 +218,22 @@ const POS = () => {
                         ${getTotal().toFixed(2)}
                       </span>
                     </div>
-                    <Button
-                      className="w-full h-12 text-lg gradient-primary text-primary-foreground hover:opacity-90"
-                      onClick={handleCheckout}
-                    >
-                      Cobrar
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1 h-12 text-lg gradient-primary text-primary-foreground hover:opacity-90"
+                        onClick={() => handleCheckout(false)}
+                      >
+                        Cobrar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-12"
+                        onClick={() => handleCheckout(true)}
+                        title="Cobrar e imprimir ticket"
+                      >
+                        <Printer className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}
