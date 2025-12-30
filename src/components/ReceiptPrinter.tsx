@@ -8,6 +8,10 @@ interface ReceiptData {
   saleId?: string;
 }
 
+const formatCLPReceipt = (amount: number): string => {
+  return '$' + Math.round(amount).toLocaleString('es-CL');
+};
+
 export const printReceipt = (data: ReceiptData) => {
   const { items, total, paymentMethod, date, saleId } = data;
 
@@ -80,7 +84,7 @@ export const printReceipt = (data: ReceiptData) => {
           text-align: center;
         }
         .item-price {
-          width: 60px;
+          width: 70px;
           text-align: right;
         }
         .total {
@@ -114,8 +118,8 @@ export const printReceipt = (data: ReceiptData) => {
       </div>
       
       <div class="info">
-        <p><strong>Fecha:</strong> ${date.toLocaleDateString('es-MX')}</p>
-        <p><strong>Hora:</strong> ${date.toLocaleTimeString('es-MX')}</p>
+        <p><strong>Fecha:</strong> ${date.toLocaleDateString('es-CL')}</p>
+        <p><strong>Hora:</strong> ${date.toLocaleTimeString('es-CL')}</p>
         ${saleId ? `<p><strong>Ticket:</strong> #${saleId.slice(-8).toUpperCase()}</p>` : ''}
         <p><strong>Pago:</strong> ${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)}</p>
       </div>
@@ -130,13 +134,13 @@ export const printReceipt = (data: ReceiptData) => {
           <div class="item">
             <span class="item-name">${item.name}</span>
             <span class="item-qty">${item.quantity}</span>
-            <span class="item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+            <span class="item-price">${formatCLPReceipt(item.price * item.quantity)}</span>
           </div>
         `).join('')}
       </div>
       
       <div class="total">
-        TOTAL: $${total.toFixed(2)}
+        TOTAL: ${formatCLPReceipt(total)}
       </div>
       
       <div class="footer">

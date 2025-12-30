@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Receipt, Calendar, Package } from "lucide-react";
 import { useSales } from "@/hooks/useSales";
+import { formatCLP } from "@/lib/formatCurrency";
 
 const Historial = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,7 +82,7 @@ const Historial = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Ingresos Totales</p>
-                  <p className="text-2xl font-bold text-primary">${totalRevenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-primary">{formatCLP(totalRevenue)}</p>
                 </div>
               </div>
             </CardContent>
@@ -156,7 +157,7 @@ const Historial = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-primary">${sale.total.toFixed(2)}</p>
+                      <p className="text-xl font-bold text-primary">{formatCLP(sale.total)}</p>
                       <p className="text-sm text-muted-foreground capitalize">
                         {sale.paymentMethod}
                       </p>
@@ -177,7 +178,7 @@ const Historial = () => {
                           <span className="text-foreground">{item.name}</span>
                         </div>
                         <span className="text-muted-foreground">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {formatCLP(item.price * item.quantity)}
                         </span>
                       </div>
                     ))}

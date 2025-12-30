@@ -3,6 +3,13 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Search, Package, Plus, Minus, Trash2, ShoppingCart, Printer } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useSales } from "@/hooks/useSales";
@@ -10,6 +17,7 @@ import { useCart } from "@/hooks/useCart";
 import { CATEGORIES } from "@/types";
 import { toast } from "sonner";
 import { printReceipt } from "@/components/ReceiptPrinter";
+import { formatCLP } from "@/lib/formatCurrency";
 
 const POS = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,7 +45,10 @@ const POS = () => {
     addToCart(product);
   };
 
-  const handleCheckout = async (shouldPrint: boolean = false) => {
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [lastSaleId, setLastSaleId] = useState<string | null>(null);
+
+  const handleCheckout = async () => {
     if (items.length === 0) {
       toast.error("El carrito está vacío");
       return;
@@ -54,23 +65,33 @@ const POS = () => {
 
       // Register sale
       const saleId = await addSale(items, getTotal(), "efectivo");
+      setLastSaleId(saleId);
       
-      // Print receipt if requested
-      if (shouldPrint) {
-        printReceipt({
-          items,
-          total: getTotal(),
-          paymentMethod: "efectivo",
-          date: new Date(),
-          saleId,
-        });
-      }
-
-      clearCart();
+      // Show print dialog
+      setShowPrintDialog(true);
       toast.success("¡Venta completada!");
     } catch (error) {
       toast.error("Error al procesar la venta");
     }
+  };
+
+  const handlePrintAndClose = () => {
+    printReceipt({
+      items,
+      total: getTotal(),
+      paymentMethod: "efectivo",
+      date: new Date(),
+      saleId: lastSaleId || undefined,
+    });
+    clearCart();
+    setShowPrintDialog(false);
+    setLastSaleId(null);
+  };
+
+  const handleCloseWithoutPrint = () => {
+    clearCart();
+    setShowPrintDialog(false);
+    setLastSaleId(null);
   };
 
   return (
@@ -134,7 +155,7 @@ const POS = () => {
                     </div>
                     <h3 className="font-medium text-foreground line-clamp-1">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
-                    <p className="text-lg font-bold text-primary mt-2">${product.price.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-primary mt-2">{formatCLP(product.price)}</p>
                   </CardContent>
                 </Card>
               );
@@ -172,7 +193,7 @@ const POS = () => {
                         <div className="flex-1">
                           <h4 className="font-medium text-foreground line-clamp-1">{item.name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            ${item.price.toFixed(2)} c/u
+                            {formatCLP(item.price)} c/u
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -196,7 +217,7 @@ const POS = () => {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-foreground">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            {formatCLP(item.price * item.quantity)}
                           </p>
                           <Button
                             variant="ghost"
@@ -215,25 +236,15 @@ const POS = () => {
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-lg font-semibold text-foreground">Total:</span>
                       <span className="text-2xl font-bold text-primary">
-                        ${getTotal().toFixed(2)}
+                        {formatCLP(getTotal())}
                       </span>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        className="flex-1 h-12 text-lg gradient-primary text-primary-foreground hover:opacity-90"
-                        onClick={() => handleCheckout(false)}
-                      >
-                        Cobrar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="h-12"
-                        onClick={() => handleCheckout(true)}
-                        title="Cobrar e imprimir ticket"
-                      >
-                        <Printer className="w-5 h-5" />
-                      </Button>
-                    </div>
+                    <Button
+                      className="w-full h-12 text-lg gradient-primary text-primary-foreground hover:opacity-90"
+                      onClick={handleCheckout}
+                    >
+                      Cobrar
+                    </Button>
                   </div>
                 </>
               )}
@@ -241,6 +252,31 @@ const POS = () => {
           </Card>
         </div>
       </div>
+
+      {/* Print Dialog */}
+      <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Printer className="w-5 h-5 text-primary" />
+              ¡Venta Completada!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <p className="text-3xl font-bold text-primary mb-2">{formatCLP(getTotal())}</p>
+            <p className="text-muted-foreground">¿Deseas imprimir el ticket?</p>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={handleCloseWithoutPrint} className="flex-1">
+              No imprimir
+            </Button>
+            <Button onClick={handlePrintAndClose} className="flex-1 gradient-primary text-primary-foreground">
+              <Printer className="w-4 h-4 mr-2" />
+              Imprimir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

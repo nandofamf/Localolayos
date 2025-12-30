@@ -15,6 +15,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { CATEGORIES } from "@/types";
 import { toast } from "sonner";
 import type { Product } from "@/types";
+import { formatCLP } from "@/lib/formatCurrency";
 
 const Productos = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -137,7 +138,7 @@ const Productos = () => {
                       </div>
                     </div>
                     <p className="text-xl font-bold text-primary shrink-0">
-                      ${product.price.toFixed(2)}
+                      {formatCLP(product.price)}
                     </p>
                     <div className="flex gap-2 shrink-0">
                       <Button
