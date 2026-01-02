@@ -27,10 +27,7 @@ export interface Category {
 
 export const CATEGORIES = [
   "Todos",
-  "Bebidas",
-  "Panadería",
-  "Lácteos",
-  "Abarrotes",
-  "Limpieza",
-  "Snacks"
+  "Metales",
+  "Tintas",
+  
 ];
