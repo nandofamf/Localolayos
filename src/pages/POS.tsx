@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, Package, Plus, Minus, Trash2, ShoppingCart, Printer } from "lucide-react";
+import { Search, Package, Plus, Minus, Trash2, ShoppingCart, Printer, Banknote, CreditCard } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useSales } from "@/hooks/useSales";
 import { useCart } from "@/hooks/useCart";
@@ -18,12 +18,13 @@ import { CATEGORIES } from "@/types";
 import { toast } from "sonner";
 import { printReceipt } from "@/components/ReceiptPrinter";
 import { formatCLP } from "@/lib/formatCurrency";
+import { CashRegister } from "@/components/CashRegister";
 
 const POS = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const { products, updateProduct } = useProducts();
-  const { addSale } = useSales();
+  const { addSale, getTodayTotal, getTodayCashTotal, getTodayCardTotal, getTodayTransactions } = useSales();
   const { items, addToCart, removeFromCart, updateQuantity, clearCart, getTotal } = useCart();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,15 +70,20 @@ const POS = () => {
     addToCart(product);
   };
 
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"efectivo" | "tarjeta">("efectivo");
 
-  const handleCheckout = async () => {
+  const handleCheckoutClick = () => {
     if (items.length === 0) {
       toast.error("El carrito está vacío");
       return;
     }
+    setShowPaymentDialog(true);
+  };
 
+  const handleCheckout = async (paymentMethod: "efectivo" | "tarjeta") => {
     try {
       // Update stock for each product
       for (const item of items) {
@@ -88,10 +94,12 @@ const POS = () => {
       }
 
       // Register sale
-      const saleId = await addSale(items, getTotal(), "efectivo");
+      const saleId = await addSale(items, getTotal(), paymentMethod);
       setLastSaleId(saleId);
+      setSelectedPaymentMethod(paymentMethod);
       
-      // Show print dialog
+      // Close payment dialog and show print dialog
+      setShowPaymentDialog(false);
       setShowPrintDialog(true);
       toast.success("¡Venta completada!");
     } catch (error) {
@@ -103,7 +111,7 @@ const POS = () => {
     printReceipt({
       items,
       total: getTotal(),
-      paymentMethod: "efectivo",
+      paymentMethod: selectedPaymentMethod,
       date: new Date(),
       saleId: lastSaleId || undefined,
     });
@@ -123,9 +131,17 @@ const POS = () => {
       <div className="flex flex-col lg:flex-row gap-6 animate-fade-in">
         {/* Products Section */}
         <div className="flex-1 space-y-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Punto de Venta</h1>
-            <p className="text-muted-foreground">Selecciona productos para agregar al carrito</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Punto de Venta</h1>
+              <p className="text-muted-foreground">Selecciona productos para agregar al carrito</p>
+            </div>
+            <CashRegister
+              todayTotal={getTodayTotal()}
+              todayCashTotal={getTodayCashTotal()}
+              todayCardTotal={getTodayCardTotal()}
+              transactionCount={getTodayTransactions()}
+            />
           </div>
 
           {/* Search */}
@@ -267,7 +283,7 @@ const POS = () => {
                     </div>
                     <Button
                       className="w-full h-12 text-lg gradient-primary text-primary-foreground hover:opacity-90"
-                      onClick={handleCheckout}
+                      onClick={handleCheckoutClick}
                     >
                       Cobrar
                     </Button>
@@ -278,6 +294,36 @@ const POS = () => {
           </Card>
         </div>
       </div>
+
+      {/* Payment Method Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Selecciona método de pago</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-center text-3xl font-bold text-primary">{formatCLP(getTotal())}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col gap-2 hover:border-primary hover:bg-primary/5"
+                onClick={() => handleCheckout("efectivo")}
+              >
+                <Banknote className="w-8 h-8 text-green-600" />
+                <span className="font-semibold">Efectivo</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col gap-2 hover:border-primary hover:bg-primary/5"
+                onClick={() => handleCheckout("tarjeta")}
+              >
+                <CreditCard className="w-8 h-8 text-blue-600" />
+                <span className="font-semibold">Tarjeta</span>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Print Dialog */}
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>

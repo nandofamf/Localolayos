@@ -48,6 +48,18 @@ export function useSales() {
     return getTodaySales().reduce((sum, sale) => sum + sale.total, 0);
   };
 
+  const getTodayCashTotal = () => {
+    return getTodaySales()
+      .filter((s) => s.paymentMethod === "efectivo")
+      .reduce((sum, sale) => sum + sale.total, 0);
+  };
+
+  const getTodayCardTotal = () => {
+    return getTodaySales()
+      .filter((s) => s.paymentMethod === "tarjeta")
+      .reduce((sum, sale) => sum + sale.total, 0);
+  };
+
   const getTodayTransactions = () => {
     return getTodaySales().length;
   };
@@ -64,6 +76,8 @@ export function useSales() {
     addSale,
     getTodaySales,
     getTodayTotal,
+    getTodayCashTotal,
+    getTodayCardTotal,
     getTodayTransactions,
     getAverageTicket,
   };
