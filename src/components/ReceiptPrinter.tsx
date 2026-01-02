@@ -113,8 +113,8 @@ export const printReceipt = (data: ReceiptData) => {
     </head>
     <body>
       <div class="header">
-        <h1>MI TIENDA</h1>
-        <p>Punto de Venta</p>
+        <h1>Olayo's</h1>
+        <p>Maipú 470, local 15, Concepción</p>
       </div>
       
       <div class="info">
