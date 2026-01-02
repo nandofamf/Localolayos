@@ -33,7 +33,7 @@ export function Layout({ children }: LayoutProps) {
               <Store className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-semibold text-foreground">Mi Tienda POS</h1>
+              <h1 className="font-semibold text-foreground">Olayo's POS</h1>
               <p className="text-xs text-muted-foreground capitalize">{today}</p>
             </div>
           </div>
@@ -68,7 +68,7 @@ export function Layout({ children }: LayoutProps) {
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <Store className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-foreground">Mi Tienda POS</span>
+            <span className="font-semibold text-foreground">Olayo's POS</span>
           </div>
         </div>
         <nav className="flex overflow-x-auto px-2 pb-2 gap-1">
