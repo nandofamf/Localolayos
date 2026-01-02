@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,9 +25,33 @@ const POS = () => {
   const { products, updateProduct } = useProducts();
   const { addSale } = useSales();
   const { items, addToCart, removeFromCart, updateQuantity, clearCart, getTotal } = useCart();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle barcode scanner input
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // If Enter is pressed and search has a barcode-like value
+      if (e.key === "Enter" && searchQuery.trim()) {
+        const product = products.find(
+          (p) => p.barcode === searchQuery.trim() || p.name.toLowerCase() === searchQuery.toLowerCase()
+        );
+        if (product) {
+          handleAddToCart(product);
+          setSearchQuery("");
+          toast.success(`${product.name} agregado al carrito`);
+        }
+      }
+    };
+
+    const input = searchInputRef.current;
+    input?.addEventListener("keydown", handleKeyDown);
+    return () => input?.removeEventListener("keydown", handleKeyDown);
+  }, [searchQuery, products]);
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.barcode && product.barcode.includes(searchQuery));
     const matchesCategory = selectedCategory === "Todos" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -108,10 +132,12 @@ const POS = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Buscar producto o escanear código..."
+              ref={searchInputRef}
+              placeholder="Escanear código de barras o buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-12"
+              autoFocus
             />
           </div>
 

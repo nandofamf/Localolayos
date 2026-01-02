@@ -181,6 +181,7 @@ const AgregarProducto = () => {
         <div className="mt-6">
           <BarcodeGenerator
             initialValue={form.barcode}
+            price={form.price ? parseFloat(form.price) : undefined}
             onBarcodeGenerated={(barcode) => handleChange("barcode", barcode)}
           />
         </div>

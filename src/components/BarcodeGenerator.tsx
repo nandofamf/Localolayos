@@ -8,10 +8,20 @@ import { toast } from "sonner";
 
 interface BarcodeGeneratorProps {
   initialValue?: string;
+  price?: number;
   onBarcodeGenerated?: (barcode: string) => void;
 }
 
-export const BarcodeGenerator = ({ initialValue = "", onBarcodeGenerated }: BarcodeGeneratorProps) => {
+const formatCLPSimple = (value: number) => {
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+export const BarcodeGenerator = ({ initialValue = "", price, onBarcodeGenerated }: BarcodeGeneratorProps) => {
   const [barcodeValue, setBarcodeValue] = useState(initialValue);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -102,6 +112,9 @@ export const BarcodeGenerator = ({ initialValue = "", onBarcodeGenerated }: Barc
         {barcodeValue && (
           <div className="flex flex-col items-center gap-4 p-4 bg-background rounded-lg border border-border">
             <svg ref={svgRef} className="max-w-full" />
+            {price !== undefined && price > 0 && (
+              <p className="text-xl font-bold text-primary">{formatCLPSimple(price)}</p>
+            )}
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={copyToClipboard}>
                 <Copy className="w-4 h-4 mr-2" />
